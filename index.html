@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdn.smtpjs.com/v3/smtp.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         
@@ -725,20 +726,49 @@
             contactForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
+                // Show loading state
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+                submitButton.disabled = true;
+
                 // Get form values
                 const name = document.getElementById('name').value;
                 const email = document.getElementById('email').value;
                 const subject = document.getElementById('subject').value;
                 const message = document.getElementById('message').value;
-                
-                // Here you would typically send the form data to a server
-                console.log('Form submitted:', { name, email, subject, message });
-                
-                // Show success message
-                alert('Thank you for your message! I will get back to you soon.');
-                
-                // Reset form
-                contactForm.reset();
+
+                // Send email using SMTP.js
+                Email.send({
+                    SecureToken: "YOUR-SECURE-TOKEN", // Get this from SmtpJS.com
+                    To: 'uxwebalex@gmail.com',
+                    From: email,
+                    Subject: `New Contact Form Message: ${subject}`,
+                    Body: `
+                        <h2>New Contact Form Submission</h2>
+                        <p><strong>Name:</strong> ${name}</p>
+                        <p><strong>Email:</strong> ${email}</p>
+                        <p><strong>Subject:</strong> ${subject}</p>
+                        <p><strong>Message:</strong></p>
+                        <p>${message}</p>
+                    `
+                }).then(
+                    message => {
+                        if (message === "OK") {
+                            alert('Thank you for your message! I will get back to you soon.');
+                            contactForm.reset();
+                        } else {
+                            alert('Something went wrong. Please try again later.');
+                        }
+                    }
+                ).catch(err => {
+                    console.error('Error:', err);
+                    alert('Something went wrong. Please try again later.');
+                }).finally(() => {
+                    // Restore button state
+                    submitButton.innerHTML = originalButtonText;
+                    submitButton.disabled = false;
+                });
             });
         }
     </script>
